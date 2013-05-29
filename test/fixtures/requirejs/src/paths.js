@@ -1,3 +1,3 @@
-define(['$', '_'], function($, _) {
+define(['$'], function($) {
   return "dependency as a path";
 });

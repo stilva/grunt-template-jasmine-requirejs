@@ -58,24 +58,40 @@ exports.process = function(grunt, task, context) {
 
   // Removes .js from the requireConfig.
   for(var el in context.options.mainRequireConfig.paths) {
-    context.options.mainRequireConfig.paths[el] = context.options.mainRequireConfig.paths[el].replace(/\.js$/,"");
+    if(typeof context.options.mainRequireConfig.paths[el] === "string") {
+      context.options.mainRequireConfig.paths[el] = context.options.mainRequireConfig.paths[el].replace(/\.js$/,"");
+    } else {
+      for(var i = 0, l = context.options.mainRequireConfig.paths[el].length; i<l; i++) {
+        context.options.mainRequireConfig.paths[el][i] = context.options.mainRequireConfig.paths[el][i].replace(/\.js$/,"");
+      }
+    }
   }
 
   // Remove baseUrl and .js from src files
   var cleanPath,
+      tmpPath,
+      pathArray = Object.keys(context.options.mainRequireConfig.paths),
       baseUrl = (context.options.requireConfig && context.options.requireConfig.baseUrl || '/');
+
   context.scripts.src.forEach(function(script, i){
     script = script.replace(new RegExp('^' + baseUrl),"");
     cleanPath = script.replace(/\.js$/,"");
-    
-    for(var el in context.options.mainRequireConfig.paths) {
-      if(cleanPath === context.options.mainRequireConfig.paths[el]) {
-        context.scripts.src[i] = el;
-        return;
+
+    for(var j = 0, pathLen = pathArray.length; j<pathLen; j++) {
+
+      tmpPath = context.options.mainRequireConfig.paths[pathArray[j]];
+
+      if(typeof tmpPath === "string") {
+        tmpPath = [tmpPath];
+      }
+
+      for(var k = 0, l = tmpPath.length; k < l; k++) {
+        if(cleanPath === tmpPath[k]) {
+          context.scripts.src[i] = pathArray[j];
+          return;
+        }
       }
     }
-
-    context.scripts.src[i] = cleanPath;
   });
 
   // Prepend loaderPlugins to the appropriate files
