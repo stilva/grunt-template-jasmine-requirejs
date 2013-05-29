@@ -47,18 +47,35 @@ exports.process = function(grunt, task, context) {
   // Extract config from main require config file
   if (context.options.requireConfigFile) {
     // Remove mainConfigFile from src files
+    var normalizedConfigFile = path.normalize(context.options.requireConfigFile);
+
     context.scripts.src = grunt.util._.reject(context.scripts.src, function (script) {
-      return path.normalize(script) === path.normalize(context.options.requireConfigFile);
+      return path.normalize(script) === normalizedConfigFile;
     });
 
     context.options.mainRequireConfig = parse.findConfig(grunt.file.read(context.options.requireConfigFile)).config;
   }
 
+  // Removes .js from the requireConfig.
+  for(var el in context.options.mainRequireConfig.paths) {
+    context.options.mainRequireConfig.paths[el] = context.options.mainRequireConfig.paths[el].replace(/\.js$/,"");
+  }
+
   // Remove baseUrl and .js from src files
-  var baseUrl = (context.options.requireConfig && context.options.requireConfig.baseUrl || '/');
+  var cleanPath,
+      baseUrl = (context.options.requireConfig && context.options.requireConfig.baseUrl || '/');
   context.scripts.src.forEach(function(script, i){
     script = script.replace(new RegExp('^' + baseUrl),"");
-    context.scripts.src[i] = script.replace(/\.js$/,"");
+    cleanPath = script.replace(/\.js$/,"");
+    
+    for(var el in context.options.mainRequireConfig.paths) {
+      if(cleanPath === context.options.mainRequireConfig.paths[el]) {
+        context.scripts.src[i] = el;
+        return;
+      }
+    }
+
+    context.scripts.src[i] = cleanPath;
   });
 
   // Prepend loaderPlugins to the appropriate files
