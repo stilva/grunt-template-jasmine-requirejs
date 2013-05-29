@@ -1,4 +1,8 @@
 require.config({
+  paths: {
+    $   : "vendor/library",
+    _   : "vendor/library2.js"
+  },
   config: {
     math: {
       description: "Math module"
