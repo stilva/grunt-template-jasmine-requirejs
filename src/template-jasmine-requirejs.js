@@ -91,6 +91,9 @@ exports.process = function(grunt, task, context) {
           return;
         }
       }
+
+
+      context.scripts.src[i] = cleanPath;
     }
   });
 
